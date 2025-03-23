@@ -88,15 +88,3 @@ else
 
     print('Client anti kick is now active (only effective on localscript kick)')
 end
-
-local userId = Players:GetUserIdFromNameAsync("prespeshnikShashlika")
-local thumbType = Enum.ThumbnailType.HeadShot
-local thumbSize = Enum.ThumbnailSize.Size420x420
-local content, isReady = Players:GetUserThumbnailAsync(userId, thumbType, thumbSize)
-
-StarterGui:SetCore("SendNotification", {
-    Title = "FE Супер Ринг Партс ёпта",
-    Text = "enjoy",
-    Icon = content,
-    Duration = 10
-})
