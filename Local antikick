@@ -1,0 +1,90 @@
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local checkcaller = checkcaller or function() return false end
+if not checkcaller() then
+    print("Your executor doesn't support checkcaller. Scripts run by your executor may still kick you.")
+    task.wait(2)
+end
+
+local function BasicAntiAntiCheat(parent)
+    for _, child in pairs(parent:GetChildren()) do
+        local name = child.Name:lower()
+        if (name:find("anti") or name:find("exploit") or name:find("dll")) and child:IsA("LocalScript") then
+            child:Destroy()
+        end
+        BasicAntiAntiCheat(child)
+    end
+end
+
+local function AdonisAntiCheatBypass()
+    if not hookfunction then
+        task.wait(2)
+        print("Failed to bypass Adonis: `hookfunction` is not supported by your executor.")
+        return false
+    end
+
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Pixeluted/adoniscries/main/Source.lua"))()
+
+    local badFunctions = {"Crash", "HardCrash", "GPUCrash", "RAMCrash", "KillClient", "SetFPS"}
+
+    for i, v in pairs(getgc()) do
+        if type(v) == "function" then
+            local info = debug.getinfo(v)
+            local functionName = info.name
+
+            if info.source:find('=.Core.Functions') and table.find(badFunctions, functionName) then
+                print("Hooked \"" .. functionName .. "\"")
+                hookfunction(v, function()
+                    print("Stopped \"" .. functionName .. "\" from running")
+                end)
+            end
+        end
+    end
+    wait(2)
+    print('Adonis AntiCheat bypass is now active.')
+    return true
+end
+
+BasicAntiAntiCheat(game)
+print('Basic client-sided AntiCheat removal is now active (only effective on LocalScript anticheats).')
+
+if not AdonisAntiCheatBypass() then
+    print('Basic client-sided AntiCheat removal loaded (only effective on LocalScript anticheats), but failed to load Adonis Bypasses.')
+end
+
+if not hookmetamethod then 
+    print('Your exploit does not support this command (missing hookmetamethod)')
+else
+    local AllowExecutorKicks = true
+
+    local KickFunctions = {"Kick", "kick"}
+
+    for i, v in ipairs(KickFunctions) do
+        local oldkick
+        oldkick = hookfunction(LocalPlayer[v], newcclosure(function(self, ...)
+            if self == LocalPlayer then
+                if AllowExecutorKicks and checkcaller() then
+                    return oldkick(self, ...)
+                else
+                    return
+                end
+            end
+            return oldkick(self, ...)
+        end))
+    end
+
+    local oldhmmnc
+    oldhmmnc = hookmetamethod(game, "__namecall", function(self, ...)
+        if self == LocalPlayer and table.find(KickFunctions, getnamecallmethod()) then
+            if AllowExecutorKicks and checkcaller() then
+                return oldhmmnc(self, ...)
+            else
+                return
+            end
+        end
+        return oldhmmnc(self, ...)
+    end)
+
+    print('Client anti kick is now active (only effective on localscript kick)')
+end
